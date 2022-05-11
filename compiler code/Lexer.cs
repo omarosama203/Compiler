@@ -31,6 +31,7 @@ namespace Myfirstcompilerproject
 {
     public class Token
     {
+		public  int tokenLine;
         public string lex;
         public Token_Class token_type;
     }
@@ -41,6 +42,7 @@ namespace Myfirstcompilerproject
     public class Lexer
     {
         public List<Token> Tokens = new List<Token>();
+		public int lineCounter=1;
         Dictionary<string, Token_Class> ReservedWords = new Dictionary<string, Token_Class>();
         Dictionary<string, Token_Class> Operators = new Dictionary<string, Token_Class>();
         List<string> sperators = new List<string>();
@@ -88,7 +90,7 @@ namespace Myfirstcompilerproject
             //Operators.Add(",", Token_Class.Comma);
             Operators.Add(",", Token_Class.QuotationMark);
             Operators.Add("'", Token_Class.QuotationMark);
-            Operators.Add(";", Token_Class.Semicolon);
+            //Operators.Add(";", Token_Class.Semicolon);
         }
         public void StartScanning(string SourceCode)
         {
@@ -100,7 +102,11 @@ namespace Myfirstcompilerproject
 
                 if (isItEmpty(CurrentChar))
                     continue;
-
+                if (isLineDelimter(CurrentChar))
+                {
+                    this.lineCounter += 1;
+                    continue;
+                }
                 // if it starts with a char it can be a reserevedword or an identifier (allow  only digits and letters to the lexeme) 
                 if (char.IsLetter(CurrentChar)) //if you read a character
                 {
@@ -237,6 +243,7 @@ namespace Myfirstcompilerproject
             {
 
                 Tok.token_type = ReservedWords[Lex];
+                Tok.tokenLine = this.lineCounter;
                 Tokens.Add(Tok);
             }
 
@@ -244,6 +251,7 @@ namespace Myfirstcompilerproject
             else if (isIdentifier(Lex))
             {
                 Tok.token_type = Token_Class.Identifier;
+                Tok.tokenLine = this.lineCounter;
                 Tokens.Add(Tok);
 
             }
@@ -252,6 +260,7 @@ namespace Myfirstcompilerproject
             else if (isNumber(Lex))
             {
                 Tok.token_type = Token_Class.Constant;
+                Tok.tokenLine = this.lineCounter;
                 Tokens.Add(Tok);
 
             }
@@ -260,6 +269,7 @@ namespace Myfirstcompilerproject
             else if (isString(Lex))
             {
                 Tok.token_type = Token_Class.String;
+                Tok.tokenLine = this.lineCounter;
                 Tokens.Add(Tok);
 
             }
@@ -268,6 +278,7 @@ namespace Myfirstcompilerproject
             else if (Operators.ContainsKey(Lex))
             {
                 Tok.token_type = Operators[Lex];
+                Tok.tokenLine = this.lineCounter;
                 Tokens.Add(Tok);
 
             }
@@ -319,7 +330,11 @@ namespace Myfirstcompilerproject
 
         bool isSaparator(char c)
         {
-            return (isItEmpty(c) || Operators.ContainsKey(c.ToString()) || c == '|' || c == '&' || c == ':');
+            return (isItEmpty(c) || Operators.ContainsKey(c.ToString()) || c == '|' || c == '&' || c == ':' || c ==';');
+        }
+		bool isLineDelimter(char c)
+        {
+            return (c==';');
         }
     }
 }

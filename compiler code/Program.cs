@@ -19,7 +19,8 @@ namespace Myfirstcompilerproject
             {
                 Console.WriteLine(
                     Program.Scanner.Tokens.ElementAt(i).token_type );
-                
+                Console.WriteLine(
+                    Program.Scanner.Tokens.ElementAt(i).tokenLine );  
             }
             Console.ReadKey();
         }
