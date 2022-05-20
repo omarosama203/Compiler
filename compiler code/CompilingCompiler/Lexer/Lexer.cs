@@ -108,6 +108,8 @@ namespace Myfirstcompilerproject
 
                 if (isLineDelimter(CurrentChar))
                 {
+                    
+                    
                     this.lineCounter += 1;
                     continue;
                 }
@@ -155,10 +157,37 @@ namespace Myfirstcompilerproject
 
                 }
 
-                // if it starts with ! if the next is = then it's a notEqualOp or it can be just not
+                // if it starts with ! if the next is = then it's a notEqualOp 
                 else if (CurrentChar == '!')
                 {
                     if (j + 1 < SourceCode.Length && SourceCode[j + 1] == '=')
+                    {
+                        j++;
+                        CurrentLexeme += SourceCode[j];
+                        i = j;
+                    }
+                }
+                else if (CurrentChar == '>')
+                {
+                    if (j + 1 < SourceCode.Length && SourceCode[j + 1] == '=')
+                    {
+                        j++;
+                        CurrentLexeme += SourceCode[j];
+                        i = j;
+                    }
+                }
+                else if (CurrentChar == '<')
+                {
+                    if (j + 1 < SourceCode.Length && SourceCode[j + 1] == '=')
+                    {
+                        j++;
+                        CurrentLexeme += SourceCode[j];
+                        i = j;
+                    }
+                }
+                else if (CurrentChar == '-')
+                {
+                    if (j + 1 < SourceCode.Length && SourceCode[j + 1] == '>')
                     {
                         j++;
                         CurrentLexeme += SourceCode[j];
@@ -227,7 +256,7 @@ namespace Myfirstcompilerproject
 
 
                 // Is it a comment then ignore
-                if (!isComment(CurrentLexeme.Replace("\r", "").Replace("\t", "").Replace("\n", "").Replace(" ", "")))
+                if (!isComment(CurrentLexeme/*.Replace("\r", "").Replace("\t", "").Replace("\n", "").Replace(" ", "")*/))
                     FindTokenClass(CurrentLexeme);
             }
 
@@ -296,16 +325,15 @@ namespace Myfirstcompilerproject
 
         private bool isComment(string lex)
         {
-            Regex regex = new Regex(@"^((\/\$)(.*)(\$\/))$");
-            return regex.IsMatch(lex);
+            return regulareExpression.matchComment(lex);
         }
 
         bool isIdentifier(string lex)
         {
             bool isValid = true;
             // Check if the lex is an identifier or not.
-            Regex regex = new Regex("^([a-zA-Z][a-zA-Z0-9]*)$");
-            isValid = regex.IsMatch(lex);
+
+            isValid = regulareExpression.matchIdentifier(lex);
 
             return isValid;
         }
@@ -313,34 +341,34 @@ namespace Myfirstcompilerproject
         {
             bool isValid = true;
             // Check if the lex is a constant (Number) or not.
-            Regex regex = new Regex("^([0-9]+(\\.[0-9]+)?)$");
-            isValid = regex.IsMatch(lex);
+
+            isValid = regulareExpression.matchNumbers(lex);
             return isValid;
         }
 
         bool isString(string lex)
         {
             bool isValid = true;
-            Regex regex = new Regex("^(\"(.*)\")$");
-            // Regex regex = new Regex("^((.*))$");
-            isValid = regex.IsMatch(lex);
+
+
+            isValid = regulareExpression.matchString(lex);
             return isValid;
         }
 
         bool isItEmpty(char c)
         {
-            return (c == ' ' || c == '\r' || c == '\n' || c == '\t');
+            return (c == ' ' || c == '\r'  || c == '\t');
         }
 
         bool isSaparator(char c)
         {
-            return (isItEmpty(c) || Operators.ContainsKey(c.ToString()) || c == '|' || c == '&' || c == ':' || c == ';');
+            return (isItEmpty(c) || Operators.ContainsKey(c.ToString()) || c == '|' || c == '&' || c == ':' || c == ';'||c=='\n');
         }
         bool isLineDelimter(char c)
         {
-            return (c == ';');
+            return (c == ';'||c=='\n');
         }
-        bool isDigit(char c)
+       public static bool isDigit(char c)
         {
             if (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9')
             {
@@ -351,9 +379,9 @@ namespace Myfirstcompilerproject
                 return false;
             }
         }
-        bool isLetter(char c)
+       public static bool isLetter(char c)
         {
-            if (c == 'a' || c == 'A' || c == 'b' || c == 'B' || c == 'c' || c == 'C' || c == 'd' || c == 'D' || c == 'e' || c == 'E' || c == 'f' || c == 'F' || c == 'g' || c == 'G' || c == 'h' || c == 'H' || c == 'i' || c == 'I' || c == 'j' || c == 'J' || c == 'k' || c == 'K' || c == 'l' || c == 'L' || c == 'm' || c == 'M' || c == 'n' || c == 'N' || c == 'o' || c == 'O' || c == 'p' || c == 'P' || c == 'q' || c == 'Q' || c == 'r' || c == 'R' || c == 's' || c == 'S' || c == 't' || c == 'T' || c == 'u' || c == 'U' || c == 'v' || c == 'V' || c == 'w' || c == 'W' || c == 'x' || c == 'X' || c == 'y' || c == 'Y' || c == 'z' || c == 'Z')
+            if (c == '_'||c == 'a' || c == 'A' || c == 'b' || c == 'B' || c == 'c' || c == 'C' || c == 'd' || c == 'D' || c == 'e' || c == 'E' || c == 'f' || c == 'F' || c == 'g' || c == 'G' || c == 'h' || c == 'H' || c == 'i' || c == 'I' || c == 'j' || c == 'J' || c == 'k' || c == 'K' || c == 'l' || c == 'L' || c == 'm' || c == 'M' || c == 'n' || c == 'N' || c == 'o' || c == 'O' || c == 'p' || c == 'P' || c == 'q' || c == 'Q' || c == 'r' || c == 'R' || c == 's' || c == 'S' || c == 't' || c == 'T' || c == 'u' || c == 'U' || c == 'v' || c == 'V' || c == 'w' || c == 'W' || c == 'x' || c == 'X' || c == 'y' || c == 'Y' || c == 'z' || c == 'Z')
             {
                 return true;
             }
@@ -363,5 +391,73 @@ namespace Myfirstcompilerproject
             }
         }
     }
-}
+    public class regulareExpression
+    {
+        public static bool matchIdentifier(String identifier)
+        {
+            if (!Lexer.isLetter(identifier[0]))
+            {
+                return false;
+            }
+            else
+            {
+                for (int i = 0; i < identifier.Length; i++)
+                {
+                    if (!Lexer.isLetter(identifier[i]) && !Lexer.isDigit(identifier[i]))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        public static bool matchNumbers(String number)
+        {
+            int dotCounter = 0;
+            if (!Lexer.isDigit(number[0]))
+            {
+                return false;
+            }
+            else
+            {
+                for (int i = 0; i < number.Length; i++)
+                {
+                    if (number[i] == '.')
+                    {
+                        dotCounter++;
+                        if (i != number.Length - 1)
+                            continue;
+                    }
+                    if (dotCounter >= 2 || !Lexer.isDigit(number[i]))
+                        return false;
+
+                }
+
+            }
+            return true;
+        }
+        public static bool matchComment(String comment)
+        {
+            int lastCharIndex = comment.Length - 1;
+            if (comment[0] == '/' && comment[1] == '$' && comment[lastCharIndex - 1] == '$' && comment[lastCharIndex] == '/')
+                return true;
+            else
+            {
+                return false;
+            }
+
+        }
+        public static bool matchString(String str)
+        {
+            if (str[0] == '"' && str[str.Length - 1] == '"')
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    }
 
