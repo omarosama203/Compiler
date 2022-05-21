@@ -101,7 +101,7 @@ namespace Myfirstcompilerproject
             {
                 int j = i;
                 char CurrentChar = SourceCode[i];
-                string CurrentLexeme = CurrentChar.ToString();
+                string CurrentLexeme = CurrentChar+"";
 
                 if (isItEmpty(CurrentChar))
                     continue;
@@ -130,7 +130,7 @@ namespace Myfirstcompilerproject
                     while (j + 1 < SourceCode.Length && !isSaparator(SourceCode[j + 1]))
                     {
                         j++;
-                        CurrentLexeme += SourceCode[j].ToString();
+                        CurrentLexeme += SourceCode[j]+"";
                     }
 
                     i = j;
@@ -144,7 +144,7 @@ namespace Myfirstcompilerproject
                     while (j + 1 < SourceCode.Length && !isSaparator(SourceCode[j + 1]))
                     {
                         j++;
-                        CurrentLexeme += SourceCode[j].ToString();
+                        CurrentLexeme += SourceCode[j]+"";
                     }
                     i = j;
                 }
@@ -157,7 +157,7 @@ namespace Myfirstcompilerproject
                     while (j + 1 < SourceCode.Length && SourceCode[j + 1] != '"')
                     {
                         j++;
-                        CurrentLexeme += SourceCode[j].ToString();
+                        CurrentLexeme += SourceCode[j]+"";
                     }
                     if (j + 1 < SourceCode.Length)
                     {
@@ -255,6 +255,10 @@ namespace Myfirstcompilerproject
                         {
                             CurrentLexeme += SourceCode[j];
                             isAboutToFinish = (SourceCode[j] == '$');
+                        }
+                        if (isLineDelimter(SourceCode[j]))
+                        {
+                            this.lineCounter++;
                         }
                         j++;
                     }
@@ -395,7 +399,7 @@ namespace Myfirstcompilerproject
 
         bool isSaparator(char c)
         {
-            return (isItEmpty(c) || Operators.ContainsKey(c.ToString()) || c == '|' || c == '&' || c == ':' || c == ';' || c == '\n');
+            return (isItEmpty(c) || Operators.ContainsKey(c+"") || c == '|' || c == '&' || c == ':' || c == ';' || c == '\n');
         }
         public static bool isLineDelimter(char c)
         {
