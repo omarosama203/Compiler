@@ -1,33 +1,33 @@
-﻿    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
-    using CompilingCompiler.Controllers;    
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using CompilingCompiler.Controllers;
 public enum Token_Class
-    {
-        // DatatTypes
-        Integer, SInteger, Character, String, Float, SFloat,
+{
+    // DatatTypes
+    Integer, SInteger, Character, String, Float, SFloat,
 
-        // reserved
-        Void, Loop, Return, Break, Struct, Condition, Endline, End, Inclusion,
-
-
-        // Oprators
-        ArithmeticOperator, // (+, -, *, /,)
-        LogicOperators, // (&&, ||, ~)
-        relationalOperators, // (==, <, >, !=, <=, >=)
-        AssignmentOperator, // =
-        AccessOperator, // ->
-                        //
-
-        Semicolon, Comma, Braces,
+    // reserved
+    Void, Loop, Return, Break, Struct, Condition, Endline, End, Inclusion,
 
 
+    // Oprators
+    ArithmeticOperator, // (+, -, *, /,)
+    LogicOperators, // (&&, ||, ~)
+    relationalOperators, // (==, <, >, !=, <=, >=)
+    AssignmentOperator, // =
+    AccessOperator, // ->
+                    //
 
-        Identifier, Constant, Comment, QuotationMark
-    }
+    Semicolon, Comma, Braces,
+
+
+
+    Identifier, Constant, Comment, QuotationMark
+}
 namespace Myfirstcompilerproject
 {
     public class Token
@@ -36,7 +36,7 @@ namespace Myfirstcompilerproject
         public string lex;
         public Token_Class token_type;
     }
-    public  class Errors
+    public class Errors
     {
         public static List<string> Error_List = new List<string>();
     }
@@ -108,12 +108,24 @@ namespace Myfirstcompilerproject
 
                 if (isLineDelimter(CurrentChar))
                 {
+                    while (j + 1 < SourceCode.Length && isSaparator(SourceCode[j + 1]))
+                    {
+
+                        if (isLineDelimter(SourceCode[j + 1]))
+                        {
+                            j++;
+                            break;
+                        }
+                        j++;
+                    }
+                    i = j;
+
                     this.lineCounter += 1;
                     continue;
                 }
                 // if it starts with a char it can be a reserevedword or an identifier (allow  only digits and letters to the lexeme) 
                 if (isLetter(CurrentChar)) //if you read a character
-                    {
+                {
 
                     while (j + 1 < SourceCode.Length && !isSaparator(SourceCode[j + 1]))
                     {
@@ -138,6 +150,7 @@ namespace Myfirstcompilerproject
                 }
 
                 // if it starts with a " then every thing is allowed till typing " again
+
                 else if (CurrentChar == '"')
                 {
                     // if it's not the last char
@@ -155,10 +168,37 @@ namespace Myfirstcompilerproject
 
                 }
 
-                // if it starts with ! if the next is = then it's a notEqualOp or it can be just not
+                // if it starts with ! if the next is = then it's a notEqualOp 
                 else if (CurrentChar == '!')
                 {
                     if (j + 1 < SourceCode.Length && SourceCode[j + 1] == '=')
+                    {
+                        j++;
+                        CurrentLexeme += SourceCode[j];
+                        i = j;
+                    }
+                }
+                else if (CurrentChar == '>')
+                {
+                    if (j + 1 < SourceCode.Length && SourceCode[j + 1] == '=')
+                    {
+                        j++;
+                        CurrentLexeme += SourceCode[j];
+                        i = j;
+                    }
+                }
+                else if (CurrentChar == '<')
+                {
+                    if (j + 1 < SourceCode.Length && SourceCode[j + 1] == '=')
+                    {
+                        j++;
+                        CurrentLexeme += SourceCode[j];
+                        i = j;
+                    }
+                }
+                else if (CurrentChar == '-')
+                {
+                    if (j + 1 < SourceCode.Length && SourceCode[j + 1] == '>')
                     {
                         j++;
                         CurrentLexeme += SourceCode[j];
@@ -224,10 +264,25 @@ namespace Myfirstcompilerproject
 
 
                 }
+                else if (j + 2 < SourceCode.Length && CurrentChar == '$' && SourceCode[j + 1] == '$' && SourceCode[j + 2] == '$')
+                {
+                    CurrentLexeme += SourceCode[j];
+                    while (j + 1 < SourceCode.Length)
+                    {
+                        j++;
+                        CurrentLexeme += SourceCode[j];
+
+                        if (isLineDelimter(SourceCode[j]))
+                            break;
+                    }
+                    i = j;
+                    this.lineCounter++;
+
+                }
 
 
                 // Is it a comment then ignore
-                if (!isComment(CurrentLexeme.Replace("\r", "").Replace("\t", "").Replace("\n", "").Replace(" ", "")))
+                if (!isComment(CurrentLexeme/*.Replace("\r", "").Replace("\t", "").Replace("\n", "").Replace(" ", "")*/))
                     FindTokenClass(CurrentLexeme);
             }
 
@@ -243,7 +298,7 @@ namespace Myfirstcompilerproject
 
 
             //Is it a reserved word?
-            if (ReservedWords.ContainsKey(Lex))
+            if (regulareExpression.matchKeywordsandOp(ReservedWords, Lex) != -1)
             {
 
                 Tok.token_type = ReservedWords[Lex];
@@ -279,7 +334,7 @@ namespace Myfirstcompilerproject
             }
 
             //Is it an operator?
-            else if (Operators.ContainsKey(Lex))
+            else if (regulareExpression.matchKeywordsandOp(Operators, Lex) != -1)
             {
                 Tok.token_type = Operators[Lex];
                 Tok.tokenLine = this.lineCounter;
@@ -296,16 +351,22 @@ namespace Myfirstcompilerproject
 
         private bool isComment(string lex)
         {
-            Regex regex = new Regex(@"^((\/\$)(.*)(\$\/))$");
-            return regex.IsMatch(lex);
+            if (regulareExpression.matchMultipleComment(lex) || regulareExpression.matchSingleComment(lex))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         bool isIdentifier(string lex)
         {
             bool isValid = true;
             // Check if the lex is an identifier or not.
-            Regex regex = new Regex("^([a-zA-Z][a-zA-Z0-9]*)$");
-            isValid = regex.IsMatch(lex);
+
+            isValid = regulareExpression.matchIdentifier(lex);
 
             return isValid;
         }
@@ -313,34 +374,34 @@ namespace Myfirstcompilerproject
         {
             bool isValid = true;
             // Check if the lex is a constant (Number) or not.
-            Regex regex = new Regex("^([0-9]+(\\.[0-9]+)?)$");
-            isValid = regex.IsMatch(lex);
+
+            isValid = regulareExpression.matchNumbers(lex);
             return isValid;
         }
 
         bool isString(string lex)
         {
             bool isValid = true;
-            Regex regex = new Regex("^(\"(.*)\")$");
-            // Regex regex = new Regex("^((.*))$");
-            isValid = regex.IsMatch(lex);
+
+
+            isValid = regulareExpression.matchString(lex);
             return isValid;
         }
 
         bool isItEmpty(char c)
         {
-            return (c == ' ' || c == '\r' || c == '\n' || c == '\t');
+            return (c == ' ' || c == '\r' || c == '\t');
         }
 
         bool isSaparator(char c)
         {
-            return (isItEmpty(c) || Operators.ContainsKey(c.ToString()) || c == '|' || c == '&' || c == ':' || c == ';');
+            return (isItEmpty(c) || Operators.ContainsKey(c.ToString()) || c == '|' || c == '&' || c == ':' || c == ';' || c == '\n');
         }
-        bool isLineDelimter(char c)
+        public static bool isLineDelimter(char c)
         {
-            return (c == ';');
+            return (c == ';' || c == '\n');
         }
-        bool isDigit(char c)
+        public static bool isDigit(char c)
         {
             if (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9')
             {
@@ -351,9 +412,9 @@ namespace Myfirstcompilerproject
                 return false;
             }
         }
-        bool isLetter(char c)
+        public static bool isLetter(char c)
         {
-            if (c == 'a' || c == 'A' || c == 'b' || c == 'B' || c == 'c' || c == 'C' || c == 'd' || c == 'D' || c == 'e' || c == 'E' || c == 'f' || c == 'F' || c == 'g' || c == 'G' || c == 'h' || c == 'H' || c == 'i' || c == 'I' || c == 'j' || c == 'J' || c == 'k' || c == 'K' || c == 'l' || c == 'L' || c == 'm' || c == 'M' || c == 'n' || c == 'N' || c == 'o' || c == 'O' || c == 'p' || c == 'P' || c == 'q' || c == 'Q' || c == 'r' || c == 'R' || c == 's' || c == 'S' || c == 't' || c == 'T' || c == 'u' || c == 'U' || c == 'v' || c == 'V' || c == 'w' || c == 'W' || c == 'x' || c == 'X' || c == 'y' || c == 'Y' || c == 'z' || c == 'Z')
+            if (c == '_' || c == 'a' || c == 'A' || c == 'b' || c == 'B' || c == 'c' || c == 'C' || c == 'd' || c == 'D' || c == 'e' || c == 'E' || c == 'f' || c == 'F' || c == 'g' || c == 'G' || c == 'h' || c == 'H' || c == 'i' || c == 'I' || c == 'j' || c == 'J' || c == 'k' || c == 'K' || c == 'l' || c == 'L' || c == 'm' || c == 'M' || c == 'n' || c == 'N' || c == 'o' || c == 'O' || c == 'p' || c == 'P' || c == 'q' || c == 'Q' || c == 'r' || c == 'R' || c == 's' || c == 'S' || c == 't' || c == 'T' || c == 'u' || c == 'U' || c == 'v' || c == 'V' || c == 'w' || c == 'W' || c == 'x' || c == 'X' || c == 'y' || c == 'Y' || c == 'z' || c == 'Z')
             {
                 return true;
             }
@@ -362,6 +423,109 @@ namespace Myfirstcompilerproject
                 return false;
             }
         }
+
+    }
+    public class regulareExpression
+    {
+        public static bool matchIdentifier(String identifier)
+        {
+            if (!Lexer.isLetter(identifier[0]))
+            {
+                return false;
+            }
+            else
+            {
+                for (int i = 0; i < identifier.Length; i++)
+                {
+                    if (!Lexer.isLetter(identifier[i]) && !Lexer.isDigit(identifier[i]))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        public static bool matchNumbers(String number)
+        {
+            int dotCounter = 0;
+            if (!Lexer.isDigit(number[0]))
+            {
+                return false;
+            }
+            else
+            {
+                for (int i = 0; i < number.Length; i++)
+                {
+                    if (number[i] == '.')
+                    {
+                        dotCounter++;
+                        if (i != number.Length - 1)
+                            continue;
+                    }
+                    if (dotCounter >= 2 || !Lexer.isDigit(number[i]))
+                        return false;
+
+                }
+
+            }
+            return true;
+        }
+        public static bool matchMultipleComment(String comment)
+        {
+            int lastCharIndex = comment.Length - 1;
+            if (comment[0] == '/' && comment[1] == '$' && comment[lastCharIndex - 1] == '$' && comment[lastCharIndex] == '/')
+                return true;
+            else
+            {
+                return false;
+            }
+
+        }
+        public static bool matchSingleComment(String comment)
+        {
+            int lastcharindex = comment.Length - 1;
+
+            if (comment[0] == '$' && comment[1] == '$' && comment[2] == '$' && Lexer.isLineDelimter(comment[lastcharindex]))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public static bool matchString(String str)
+        {
+            if (str[0] == '"' && str[str.Length - 1] == '"')
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public static int matchKeywordsandOp(Dictionary<string, Token_Class> keywords, string lex)
+        {
+            string key;
+            int index = -1;
+            for (int i = 0; i < keywords.Count; i++)
+            {
+                key = keywords.ElementAt(i).Key;
+                if (lex.Length != key.Length)
+                {
+                    continue;
+                }
+                if (lex == key)
+                {
+                    index = i;
+                }
+            }
+            return index;
+
+        }
+
     }
 }
+
 
