@@ -108,7 +108,16 @@ namespace Myfirstcompilerproject
 
                 if (isLineDelimter(CurrentChar))
                 {
-                    
+                    while(j + 1 < SourceCode.Length && isSaparator(SourceCode[j + 1])){
+                        
+                        if (isLineDelimter(SourceCode[j + 1]))
+                        {
+                            j++;
+                            break;
+                        }
+                        j++;
+                    }
+                    i = j;
                     
                     this.lineCounter += 1;
                     continue;
@@ -140,6 +149,7 @@ namespace Myfirstcompilerproject
                 }
 
                 // if it starts with a " then every thing is allowed till typing " again
+                
                 else if (CurrentChar == '"')
                 {
                     // if it's not the last char
@@ -253,6 +263,21 @@ namespace Myfirstcompilerproject
 
 
                 }
+                else if(j + 2 < SourceCode.Length && CurrentChar == '$' && SourceCode[j + 1] == '$'&& SourceCode[j + 2] == '$')
+                {
+                    CurrentLexeme += SourceCode[j];
+                    while (j+1 < SourceCode.Length)
+                    {
+                        j++;
+                        CurrentLexeme += SourceCode[j];
+                        
+                        if (isLineDelimter(SourceCode[j]))
+                            break;
+                    }
+                    i = j;
+                    this.lineCounter++;
+
+                }
 
 
                 // Is it a comment then ignore
@@ -272,7 +297,7 @@ namespace Myfirstcompilerproject
 
 
             //Is it a reserved word?
-            if (ReservedWords.ContainsKey(Lex))
+            if (regulareExpression.matchKeywordsandOp(ReservedWords, Lex) !=-1)
             {
 
                 Tok.token_type = ReservedWords[Lex];
@@ -308,7 +333,7 @@ namespace Myfirstcompilerproject
             }
 
             //Is it an operator?
-            else if (Operators.ContainsKey(Lex))
+            else if (regulareExpression.matchKeywordsandOp(Operators, Lex) != -1)
             {
                 Tok.token_type = Operators[Lex];
                 Tok.tokenLine = this.lineCounter;
@@ -325,7 +350,14 @@ namespace Myfirstcompilerproject
 
         private bool isComment(string lex)
         {
-            return regulareExpression.matchComment(lex);
+            if(regulareExpression.matchMultipleComment(lex) || regulareExpression.matchSingleComment(lex))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         bool isIdentifier(string lex)
@@ -364,7 +396,7 @@ namespace Myfirstcompilerproject
         {
             return (isItEmpty(c) || Operators.ContainsKey(c.ToString()) || c == '|' || c == '&' || c == ':' || c == ';'||c=='\n');
         }
-        bool isLineDelimter(char c)
+        public static bool isLineDelimter(char c)
         {
             return (c == ';'||c=='\n');
         }
@@ -390,6 +422,7 @@ namespace Myfirstcompilerproject
                 return false;
             }
         }
+       
     }
     public class regulareExpression
     {
@@ -436,7 +469,7 @@ namespace Myfirstcompilerproject
             }
             return true;
         }
-        public static bool matchComment(String comment)
+        public static bool matchMultipleComment(String comment)
         {
             int lastCharIndex = comment.Length - 1;
             if (comment[0] == '/' && comment[1] == '$' && comment[lastCharIndex - 1] == '$' && comment[lastCharIndex] == '/')
@@ -446,6 +479,19 @@ namespace Myfirstcompilerproject
                 return false;
             }
 
+        }
+        public static bool matchSingleComment(String comment)
+        {
+            int lastcharindex = comment.Length - 1;
+           
+            if(comment[0]=='$'&&comment[1]=='$' && comment[2] == '$'&& Lexer.isLineDelimter(comment[lastcharindex]))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         public static bool matchString(String str)
         {
@@ -458,6 +504,26 @@ namespace Myfirstcompilerproject
                 return false;
             }
         }
+        public static int matchKeywordsandOp(Dictionary<string, Token_Class> keywords,string lex)
+        {
+            string key;
+            int index = -1;
+            for (int i = 0; i < keywords.Count; i++)
+            {
+                key = keywords.ElementAt(i).Key;
+                if (lex.Length != key.Length)
+                {
+                    continue; 
+                }
+                if (lex == key)
+                {
+                    index = i;
+                }
+            }
+            return index;
+            
+        }
+       
     }
     }
 
