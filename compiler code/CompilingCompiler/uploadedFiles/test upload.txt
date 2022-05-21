@@ -1,0 +1,7 @@
+hello
+
+                // Read the file as one string.
+                //string text = System.IO.File.ReadAllText(Server.MapPath(@"~/UploadedFiles/test.txt"));
+
+                // Display the file contents to the console. Variable text is a string.
+                //TempData["0"] = text;

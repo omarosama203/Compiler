@@ -18,13 +18,20 @@
     <div class="contain">
         <div class="input">
             <h2>Input</h2>
-            @using (Html.BeginForm())
+            @using (Html.BeginForm("UploadFile", "Home", FormMethod.Post, new { enctype = "multipart/form-data", data_ajax = "false" }))
             {
                 <label for="gib"></label>
-                <textarea id="gib" name="gib" rows="25" cols="50" required></textarea>
+                <textarea id="gib" name="gib" rows="25" cols="50"></textarea>
                 <br />
-                <button type="submit" formaction="~/Home/Scan"">Scan</button>
-                <button type="submit" formaction="~/Home/Function2">Function2</button>
+                <button type="submit" formaction="~/Home/Scan" ">Scan</button>
+                <button type="submit" formaction="~/Home/Function2">Parse</button>
+
+
+                <div>
+                    @Html.TextBox("file", "", new { type = "file" }) <br />
+                    <input type="submit" value="Upload" />
+                    @ViewBag.Message
+                </div>
 
 
             }
@@ -33,14 +40,15 @@
         <div class="result" id="result">
             <h2>Result</h2>
             <p>
-                @for (int i =0; i < TempData.Count; i++)
+                @for (int i = 0; i < TempData.Count; i++)
                 {
-                @TempData[i.ToString()] 
+                    @TempData[i.ToString()]
                     <br />
                 }
             </p>
         </div>
     </div>
+
 </body>
 
 </html>
@@ -77,5 +85,10 @@
     p {
         word-wrap: break-word;
     }
-
+    #uploadButton {
+        width:px;
+        height:20px;
+        background:black;
+        color:white;
+    }
 </style>

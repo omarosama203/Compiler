@@ -5,6 +5,8 @@ using System.Web;
 using System.Web.Mvc;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+
 using Myfirstcompilerproject;
 
 namespace CompilingCompiler.Controllers
@@ -33,7 +35,7 @@ namespace CompilingCompiler.Controllers
             string code = gib;
             String tmpStr = "";
 
-            List<String> employees = new List<String>();
+          //  List<String> employees = new List<String>();
             Start_Compiling(code);
  /*           for (int i = 0; i < HomeController.Scanner.Tokens.Count; i++)
             {
@@ -46,8 +48,7 @@ namespace CompilingCompiler.Controllers
             {
                 TempData[i.ToString()] = " Line #" + HomeController.Scanner.Tokens.ElementAt(i).tokenLine + " Contains " + HomeController.Scanner.Tokens.ElementAt(i).token_type ;// " Errors :" + HomeController.errors;
 
-                
-          //      r2 = r2+  HomeController.Scanner.Tokens.ElementAt(i).tokenLine;
+   
             }
             //TempData["result"]= tmpStr;//r1 + "----" + r2;
             code = "";
@@ -76,6 +77,42 @@ namespace CompilingCompiler.Controllers
             TempData["result"] = gib;
             return RedirectToAction("Index", "Home");
         }
+        [HttpGet]
+        public ActionResult UploadFile()
+        {
+            return RedirectToAction("Index", "Home");
+        }
+        [HttpPost]
+        public ActionResult UploadFile(HttpPostedFileBase file)
+        {
+            try
+            {
+                if (file.ContentLength > 0)
+                {
+                    string _FileName = Path.GetFileName(file.FileName);
+                    string _path = Path.Combine(Server.MapPath("~/UploadedFiles"), "test.txt");
+                    file.SaveAs(_path);
+                }
+                // Read the file as one string.
+                string text = System.IO.File.ReadAllText(Server.MapPath(@"~/UploadedFiles/test.txt"));
 
+                // Display the file contents to the console. Variable text is a string.
+                string code = text;
+                Start_Compiling(code);
+                for (int i = 0; i < HomeController.Scanner.Tokens.Count; i++)
+                {
+                    TempData[i.ToString()] = " Line #" + HomeController.Scanner.Tokens.ElementAt(i).tokenLine + " Contains " + HomeController.Scanner.Tokens.ElementAt(i).token_type;// " Errors :" + HomeController.errors;
+
+
+                }
+                ViewBag.Message = "File Uploaded Successfully!!";
+                return RedirectToAction("Index", "Home");
+            }
+            catch
+            {
+                ViewBag.Message = "File upload failed!!";
+                return RedirectToAction("Index", "Home");
+            }
+        }
     }
 }
