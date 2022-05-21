@@ -399,7 +399,7 @@ namespace Myfirstcompilerproject
 
         bool isSaparator(char c)
         {
-            return (isItEmpty(c) || Operators.ContainsKey(c+"") || c == '|' || c == '&' || c == ':' || c == ';' || c == '\n');
+            return (isItEmpty(c) || regulareExpression.matchKeywordsandOp(Operators,c+"")!=-1 || c == '|' || c == '!' || c == '&' || c == ':' || c == ';' || c == '\n');
         }
         public static bool isLineDelimter(char c)
         {
