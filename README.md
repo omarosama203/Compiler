@@ -1,4 +1,3 @@
 # Compiler
-.net compiler
+.net Scanner
 
-Team 19
